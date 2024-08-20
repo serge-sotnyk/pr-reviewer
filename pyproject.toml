@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "pr-reviewer"
+version = "0.1.0"
+description = "Test task for Namecheap"
+authors = ["Serge Sotnyk <serge.sotnyk@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
