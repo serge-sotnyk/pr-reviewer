@@ -1,3 +1,4 @@
+from io import BytesIO
 from pathlib import Path
 from dulwich.repo import Repo
 from dulwich.diff_tree import tree_changes
@@ -29,17 +30,17 @@ changes = list(tree_changes(repo, master_tree, feature_tree))
 # Process and display the changes
 for change in changes:
     if change.type == 'modify':
-        # Get the contents of the old and new versions of the file
-        old_blob = repo.get_blob(change.old.sha)
-        new_blob = repo.get_blob(change.new.sha)
+        # Retrieve the old and new blob information as (path, mode, hexsha) tuples
+        old_file = (change.old.path, change.old.mode, change.old.sha)
+        new_file = (change.new.path, change.new.mode, change.new.sha)
 
-        # Generate a patch (diff) between the two versions of the file
-        diff = patch.diff_tree(repo.object_store, old_blob, new_blob)
+        # Generate the diff between the two blobs
+        diff_output = BytesIO()
+        patch.write_object_diff(diff_output, repo.object_store, old_file, new_file)
 
         # Print the diff
         print(f"Changes in file: {change.old.path.decode('utf-8')}")
-        for line in diff:
-            print(line.decode('utf-8'))
+        print(diff_output.getvalue().decode('utf-8'))
     else:
         # For other change types (e.g., delete, add), just display the change details
         print(f"Change type: {change.type}")
