@@ -7,11 +7,16 @@ from .git_repo_base import GitRepoBase
 
 
 class GitTools(GitRepoBase):
-    @tool
-    def list_branches(self) -> str:
+    def list_branches_int(self) -> str:
         """List all branches in the repository."""
         branches = porcelain.branch_list(self.repo)
         return "\n".join([branch.decode() for branch in branches])
+
+    @tool
+    def list_branches(self) -> str:
+        """List all branches in the repository."""
+        return self.list_branches_int()
+
 
     @tool
     def diff_between_branches(self, branch1: str, branch2: str) -> str:

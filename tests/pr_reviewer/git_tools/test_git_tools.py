@@ -5,5 +5,5 @@ test_repo_url = "git@github.com:serge-sotnyk/pr-reviewer-test.git"
 
 def test_list_branches():
     with GitTools(test_repo_url) as git_tools:
-        branches = git_tools.list_branches()
+        branches = git_tools.list_branches_int()
         assert branches
