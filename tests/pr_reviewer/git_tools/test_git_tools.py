@@ -12,5 +12,5 @@ def test_list_branches():
 
 def test_diff_between_branches():
     with GitTools(test_repo_url) as git_tools:
-        diff = git_tools.diff_between_branches("main", "test")
+        diff = git_tools.diff_between_branches_int("main", "test")
         assert diff
