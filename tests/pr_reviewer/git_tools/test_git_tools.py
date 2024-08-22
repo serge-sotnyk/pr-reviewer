@@ -8,3 +8,9 @@ def test_list_branches():
         branches = git_tools.list_branches_int()
         assert len(branches) > 0
         assert "main" in branches
+
+
+def test_diff_between_branches():
+    with GitTools(test_repo_url) as git_tools:
+        diff = git_tools.diff_between_branches("main", "test")
+        assert diff

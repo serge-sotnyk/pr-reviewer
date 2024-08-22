@@ -28,9 +28,7 @@ class GitTools(GitRepoBase):
         """List all branches in the repository."""
         return self.list_branches_int()
 
-
-    @tool
-    def diff_between_branches(self, branch1: str, branch2: str) -> str:
+    def diff_between_branches_int(self, branch1: str, branch2: str) -> str:
         """Get the diff between two branches."""
         self.fetch_branch(branch1)
         self.fetch_branch(branch2)
@@ -47,6 +45,11 @@ class GitTools(GitRepoBase):
             result.append(f"Type: {change.type}, Old: {old_path}, New: {new_path}")
 
         return "\n".join(result)
+
+    @tool
+    def diff_between_branches(self, branch1: str, branch2: str) -> str:
+        """Get the diff between two branches."""
+        return self.diff_between_branches_int(branch1, branch2)
 
     @tool
     def diff_file_content(self, branch1: str, branch2: str, file_path: str) -> str:
