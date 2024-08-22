@@ -7,13 +7,24 @@ from .git_repo_base import GitRepoBase
 
 
 class GitTools(GitRepoBase):
-    def list_branches_int(self) -> str:
-        """List all branches in the repository."""
-        branches = porcelain.branch_list(self.repo)
-        return "\n".join([branch.decode() for branch in branches])
+    def list_branches_int(self) -> list[str]:
+        """List all branches in the repository, including remote branches."""
+        # Fetch to ensure we have the latest remote information
+        porcelain.fetch(self.repo)
+
+        all_branches = set()
+
+        # List remote branches
+        for ref in self.repo.get_refs():
+            if ref.startswith(b'refs/remotes/origin/'):
+                branch_name = ref.decode().split('/')[-1]
+                if branch_name != 'HEAD':  # Exclude the HEAD ref
+                    all_branches.add(branch_name)
+
+        return sorted(all_branches)
 
     @tool
-    def list_branches(self) -> str:
+    def list_branches(self) -> list[str]:
         """List all branches in the repository."""
         return self.list_branches_int()
 
