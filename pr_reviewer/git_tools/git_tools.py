@@ -17,7 +17,7 @@ class GitTools:
     def _get_branch_tree(self, branch_name: str) -> object:
         return self.repo[self.repo.refs[f'refs/heads/{branch_name}'.encode()]].tree
 
-    def list_branches_int(self) -> list[str]:
+    def list_branches(self) -> list[str]:
         """List all branches in the local repository."""
         branches = []
         for ref in self.repo.refs.keys():
@@ -25,12 +25,7 @@ class GitTools:
                 branches.append(ref.decode().split('/')[-1])
         return sorted(branches)
 
-    @tool
-    def list_branches(self) -> list[str]:
-        """List all branches in the local repository."""
-        return self.list_branches_int()
-
-    def diff_between_branches_int(self, branch1: str, branch2: str) -> str:
+    def diff_between_branches(self, branch1: str, branch2: str) -> str:
         """Get the diff between two branches."""
         tree1 = self._get_branch_tree(branch1)
         tree2 = self._get_branch_tree(branch2)
@@ -45,12 +40,7 @@ class GitTools:
 
         return "\n".join(result)
 
-    @tool
-    def diff_between_branches(self, branch1: str, branch2: str) -> str:
-        """Get the diff between two branches."""
-        return self.diff_between_branches_int(branch1, branch2)
-
-    def diff_file_content_int(self, branch1: str, branch2: str, file_path: str) -> str:
+    def diff_file_content(self, branch1: str, branch2: str, file_path: str) -> str:
         """Get the diff of a file's content between two branches."""
         tree1 = self._get_branch_tree(branch1)
         tree2 = self._get_branch_tree(branch2)
@@ -68,12 +58,7 @@ class GitTools:
 
         return f"No changes found for file {file_path}"
 
-    @tool
-    def diff_file_content(self, branch1: str, branch2: str, file_path: str) -> str:
-        """Get the diff of a file's content between two branches."""
-        return self.diff_file_content_int(branch1, branch2, file_path)
-
-    def get_file_content_int(self, branch: str, file_path: str) -> str:
+    def get_file_content(self, branch: str, file_path: str) -> str:
         """Get the full content of a file in a specific branch."""
         tree = self._get_branch_tree(branch)
 
@@ -83,31 +68,26 @@ class GitTools:
         except KeyError:
             return f"File {file_path} not found in branch {branch}"
 
-    @tool
-    def get_file_content(self, branch: str, file_path: str) -> str:
-        """Get the full content of a file in a specific branch."""
-        return self.get_file_content_int(branch, file_path)
-
     def get_tools(self) -> list[BaseTool]:
         @tool
         def list_branches() -> list[str]:
             """List all branches in the local repository."""
-            return self.list_branches_int()
+            return self.list_branches()
 
         @tool
         def diff_between_branches(branch1: str, branch2: str) -> str:
             """Get the diff between two branches."""
-            return self.diff_between_branches_int(branch1, branch2)
+            return self.diff_between_branches(branch1, branch2)
 
         @tool
         def diff_file_content(branch1: str, branch2: str, file_path: str) -> str:
             """Get the diff of a file's content between two branches."""
-            return self.diff_file_content_int(branch1, branch2, file_path)
+            return self.diff_file_content(branch1, branch2, file_path)
 
         @tool
         def get_file_content(branch: str, file_path: str) -> str:
             """Get the full content of a file in a specific branch."""
-            return self.get_file_content_int(branch, file_path)
+            return self.get_file_content(branch, file_path)
 
         return cast(list[BaseTool],
                     [list_branches, diff_between_branches, diff_file_content, get_file_content])

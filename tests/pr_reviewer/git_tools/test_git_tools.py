@@ -23,32 +23,32 @@ test_repo_path = find_test_repo_path()
 
 def test_list_branches():
     git_tools = GitTools(test_repo_path)
-    branches = git_tools.list_branches_int()
+    branches = git_tools.list_branches()
     assert len(branches) > 0
     assert "main" in branches
 
 
 def test_diff_between_branches():
     git_tools = GitTools(test_repo_path)
-    diff = git_tools.diff_between_branches_int("main", "test")
+    diff = git_tools.diff_between_branches("main", "test")
     assert diff
 
 
 def test_diff_file_content_int():
     git_tools = GitTools(test_repo_path)
-    diff = git_tools.diff_file_content_int("main", "test", "file_to_modify.txt")
+    diff = git_tools.diff_file_content("main", "test", "file_to_modify.txt")
     assert diff
 
 
 def test_get_file_content():
     git_tools = GitTools(test_repo_path)
-    content_main = git_tools.get_file_content_int("main", "file_to_modify.txt")
+    content_main = git_tools.get_file_content("main", "file_to_modify.txt")
     assert "Row to deletion" in content_main
     assert "Row to change" in content_main
     assert "Row changed" not in content_main
     assert "And added row" not in content_main
 
-    content_test = git_tools.get_file_content_int("test", "file_to_modify.txt")
+    content_test = git_tools.get_file_content("test", "file_to_modify.txt")
     assert "Row to deletion" not in content_test
     assert "Row to change" not in content_test
     assert "Row changed" in content_test
