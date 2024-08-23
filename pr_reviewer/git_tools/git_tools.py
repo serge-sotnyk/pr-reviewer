@@ -55,6 +55,10 @@ class GitTools:
                 diff_output = BytesIO()
                 patch.write_object_diff(diff_output, self.repo.object_store, old_file, new_file)
                 return diff_output.getvalue().decode('utf-8')
+            if change.type == 'add' and change.new.path.decode('utf-8') == file_path:
+                content = self.get_file_content(branch2, file_path)
+                content = [f"+{line}" for line in content.splitlines()]
+                return "\n".join(content)
 
         return f"No changes found for file {file_path}"
 
