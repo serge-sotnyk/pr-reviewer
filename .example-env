@@ -1,3 +1,2 @@
 OPENAI_API_KEY="your-api-key"
 GROQ_API_KEY="your-api-key"
-GIT_TEMP_ROOT="Directory where temporary git repo will be created"

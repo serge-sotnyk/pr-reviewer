@@ -76,7 +76,7 @@ class GitTools:
         tree = self._get_branch_tree(branch)
 
         try:
-            file_sha = tree[file_path.encode()]
+            _, file_sha = self.repo[tree][file_path.encode()]
             return self.repo[file_sha].data.decode('utf-8')
         except KeyError:
             return f"File {file_path} not found in branch {branch}"

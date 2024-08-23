@@ -40,7 +40,7 @@ def test_diff_file_content_int():
     assert diff
 
 
-def test_diff_file_content_str():
+def test_get_file_content():
     git_tools = GitTools(test_repo_path)
     content_main = git_tools.get_file_content_int("main", "file_to_modify.txt")
     assert "Row to deletion" in content_main
