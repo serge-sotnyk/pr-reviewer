@@ -21,12 +21,12 @@ def sync_repo(repo_path: Path):
 
     # Fetch all changes from remote
     client, remote_path = get_transport_and_path(REPO_URL)
-    remote_refs = client.fetch(remote_path, repo)
+    fetch_result = client.fetch(remote_path, repo)
 
     print("Fetched changes from remote.")
 
     # Update all local branches
-    for remote_ref, sha in remote_refs.items():
+    for remote_ref, sha in fetch_result.refs.items():
         if remote_ref.startswith(b'refs/heads/'):
             branch_name = remote_ref.decode('utf-8').split('/')[-1]
             print(f"Updating branch: {branch_name}")
@@ -38,7 +38,7 @@ def sync_repo(repo_path: Path):
             repo.refs[f'refs/remotes/origin/{branch_name}'.encode()] = sha
 
     # Remove local branches that no longer exist on remote
-    remote_branches = [ref.decode('utf-8').split('/')[-1] for ref in remote_refs if
+    remote_branches = [ref.decode('utf-8').split('/')[-1] for ref in fetch_result.refs if
                        ref.startswith(b'refs/heads/')]
     local_branches = [ref.split(b'/')[-1].decode('utf-8') for ref in repo.refs.keys() if
                       ref.startswith(b'refs/heads/')]
