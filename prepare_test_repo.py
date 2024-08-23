@@ -1,6 +1,7 @@
 from pathlib import Path
 from dulwich import porcelain
 from dulwich.repo import Repo
+from dulwich.client import get_transport_and_path
 
 # Constants
 REPO_URL = "git@github.com:serge-sotnyk/pr-reviewer-test.git"
@@ -18,20 +19,34 @@ def sync_repo(repo_path: Path):
     print(f"Repository {REPO_NAME} already exists. Synchronizing...")
     repo = Repo(str(repo_path))
 
-    # Get all remote branches
-    remote_refs = porcelain.ls_remote(REPO_URL)
+    # Fetch all changes from remote
+    client, remote_path = get_transport_and_path(REPO_URL)
+    remote_refs = client.fetch(remote_path, repo)
 
-    for ref_name, _ in remote_refs.items():
-        if ref_name.startswith(b"refs/heads/"):
-            branch_name = ref_name.decode("utf-8").split("/")[-1]
-            print(f"Synchronizing branch: {branch_name}")
+    print("Fetched changes from remote.")
 
-            # Fetch changes for each branch
-            porcelain.fetch(repo, REPO_URL)
+    # Update all local branches
+    for remote_ref, sha in remote_refs.items():
+        if remote_ref.startswith(b'refs/heads/'):
+            branch_name = remote_ref.decode('utf-8').split('/')[-1]
+            print(f"Updating branch: {branch_name}")
 
-            # Update the local branch
-            remote_branch = repo[f'refs/remotes/origin/{branch_name}'.encode()]
-            repo[f'refs/heads/{branch_name}'.encode()] = remote_branch.id
+            # Update or create the local branch
+            repo.refs[f'refs/heads/{branch_name}'.encode()] = sha
+
+            # Update the remote tracking branch
+            repo.refs[f'refs/remotes/origin/{branch_name}'.encode()] = sha
+
+    # Remove local branches that no longer exist on remote
+    remote_branches = [ref.decode('utf-8').split('/')[-1] for ref in remote_refs if
+                       ref.startswith(b'refs/heads/')]
+    local_branches = [ref.split(b'/')[-1].decode('utf-8') for ref in repo.refs.keys() if
+                      ref.startswith(b'refs/heads/')]
+
+    for branch_name in local_branches:
+        if branch_name not in remote_branches:
+            print(f"Removing obsolete local branch: {branch_name}")
+            del repo.refs[f'refs/heads/{branch_name}'.encode()]
 
     print("Synchronization completed.")
 
