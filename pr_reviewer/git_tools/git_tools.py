@@ -6,7 +6,7 @@ from dulwich import patch
 from dulwich import porcelain
 from dulwich.diff_tree import tree_changes
 from langchain.tools import tool
-from langchain_core.tools import BaseTool, StructuredTool
+from langchain_core.tools import BaseTool
 
 
 class GitTools:
@@ -48,14 +48,16 @@ class GitTools:
         changes = list(tree_changes(self.repo, tree1, tree2))
 
         for change in changes:
-            if change.type == 'modify' and change.new.path.decode('utf-8') == file_path:
+            if change.new.path and (change.new.path.decode('utf-8') != file_path):
+                continue
+            if change.type == 'modify':
                 old_file = (change.old.path, change.old.mode, change.old.sha)
                 new_file = (change.new.path, change.new.mode, change.new.sha)
 
                 diff_output = BytesIO()
                 patch.write_object_diff(diff_output, self.repo.object_store, old_file, new_file)
                 return diff_output.getvalue().decode('utf-8')
-            if change.type == 'add' and change.new.path.decode('utf-8') == file_path:
+            if change.type == 'add':
                 content = self.get_file_content(branch2, file_path)
                 content = [f"+{line}" for line in content.splitlines()]
                 return "\n".join(content)
