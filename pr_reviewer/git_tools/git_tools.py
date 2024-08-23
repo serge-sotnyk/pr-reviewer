@@ -1,40 +1,37 @@
-from langchain.tools import tool
-from dulwich.diff_tree import tree_changes
-from dulwich import patch, porcelain
 from io import BytesIO
+from pathlib import Path
 
-from .git_repo_base import GitRepoBase
+from dulwich import patch
+from dulwich import porcelain
+from dulwich.diff_tree import tree_changes
+from langchain.tools import tool
 
 
-class GitTools(GitRepoBase):
+class GitTools:
+    def __init__(self, repo_path: str):
+        self.repo_path = Path(repo_path)
+        self.repo = porcelain.open_repo(str(self.repo_path))
+
+    def _get_branch_tree(self, branch_name: str) -> object:
+        return self.repo[self.repo.refs[f'refs/heads/{branch_name}'.encode()]].tree
+
     def list_branches_int(self) -> list[str]:
-        """List all branches in the repository, including remote branches."""
-        # Fetch to ensure we have the latest remote information
-        porcelain.fetch(self.repo)
-
-        all_branches = set()
-
-        # List remote branches
-        for ref in self.repo.get_refs():
-            if ref.startswith(b'refs/remotes/origin/'):
-                branch_name = ref.decode().split('/')[-1]
-                if branch_name != 'HEAD':  # Exclude the HEAD ref
-                    all_branches.add(branch_name)
-
-        return sorted(all_branches)
+        """List all branches in the local repository."""
+        branches = []
+        for ref in self.repo.refs.keys():
+            if ref.startswith(b'refs/heads/'):
+                branches.append(ref.decode().split('/')[-1])
+        return sorted(branches)
 
     @tool
     def list_branches(self) -> list[str]:
-        """List all branches in the repository."""
+        """List all branches in the local repository."""
         return self.list_branches_int()
 
     def diff_between_branches_int(self, branch1: str, branch2: str) -> str:
         """Get the diff between two branches."""
-        self.fetch_branch(branch1)
-        self.fetch_branch(branch2)
-
-        tree1 = self.get_branch_tree(branch1)
-        tree2 = self.get_branch_tree(branch2)
+        tree1 = self._get_branch_tree(branch1)
+        tree2 = self._get_branch_tree(branch2)
 
         changes = list(tree_changes(self.repo, tree1, tree2))
 
@@ -51,14 +48,10 @@ class GitTools(GitRepoBase):
         """Get the diff between two branches."""
         return self.diff_between_branches_int(branch1, branch2)
 
-    @tool
-    def diff_file_content(self, branch1: str, branch2: str, file_path: str) -> str:
+    def diff_file_content_int(self, branch1: str, branch2: str, file_path: str) -> str:
         """Get the diff of a file's content between two branches."""
-        self.fetch_branch(branch1)
-        self.fetch_branch(branch2)
-
-        tree1 = self.get_branch_tree(branch1)
-        tree2 = self.get_branch_tree(branch2)
+        tree1 = self._get_branch_tree(branch1)
+        tree2 = self._get_branch_tree(branch2)
 
         changes = list(tree_changes(self.repo, tree1, tree2))
 
@@ -74,11 +67,13 @@ class GitTools(GitRepoBase):
         return f"No changes found for file {file_path}"
 
     @tool
-    def get_file_content(self, branch: str, file_path: str) -> str:
-        """Get the full content of a file in a specific branch."""
-        self.fetch_branch(branch)
+    def diff_file_content(self, branch1: str, branch2: str, file_path: str) -> str:
+        """Get the diff of a file's content between two branches."""
+        return self.diff_file_content_int(branch1, branch2, file_path)
 
-        tree = self.get_branch_tree(branch)
+    def get_file_content_int(self, branch: str, file_path: str) -> str:
+        """Get the full content of a file in a specific branch."""
+        tree = self._get_branch_tree(branch)
 
         try:
             file_sha = tree[file_path.encode()]
@@ -86,9 +81,14 @@ class GitTools(GitRepoBase):
         except KeyError:
             return f"File {file_path} not found in branch {branch}"
 
+    @tool
+    def get_file_content(self, branch: str, file_path: str) -> str:
+        """Get the full content of a file in a specific branch."""
+        return self.get_file_content_int(branch, file_path)
+
 # Usage example:
-# with GitTools('https://github.com/example/repo.git') as git_tools:
-#     branches = git_tools.list_branches()
-#     diff = git_tools.diff_between_branches('main', 'dev')
-#     file_diff = git_tools.diff_file_content('main', 'dev', 'path/to/file.py')
-#     file_content = git_tools.get_file_content('main', 'path/to/file.py')
+# git_tools = GitTools('/path/to/local/repo')
+# branches = git_tools.list_branches_int()
+# diff = git_tools.diff_between_branches_int('main', 'dev')
+# file_diff = git_tools.diff_file_content_int('main', 'dev', 'path/to/file.py')
+# file_content = git_tools.get_file_content_int('main', 'path/to/file.py')
