@@ -59,17 +59,19 @@ def clone_repo(repo_path: Path):
     repo = Repo(str(repo_path))
 
     # Get all remote branches after cloning
-    remote_refs = porcelain.ls_remote(REPO_URL)
+    client, remote_path = get_transport_and_path(REPO_URL)
+    remote_refs = client.get_refs(remote_path)
 
-    for ref_name, _ in remote_refs.items():
+    for ref_name, sha in remote_refs.items():
         if ref_name.startswith(b"refs/heads/") and ref_name != b"refs/heads/main":
             branch_name = ref_name.decode("utf-8").split("/")[-1]
             print(f"Creating local branch: {branch_name}")
 
             # Create a local branch for each remote branch
-            porcelain.update_head(repo, ref_name)
+            repo.refs[f'refs/heads/{branch_name}'.encode()] = sha
+            repo.refs[f'refs/remotes/origin/{branch_name}'.encode()] = sha
 
-    print("Cloning completed.")
+    print("Cloning and branch setup completed.")
 
 
 def main():
