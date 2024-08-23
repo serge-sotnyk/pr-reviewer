@@ -1,10 +1,12 @@
 from io import BytesIO
 from pathlib import Path
+from typing import cast
 
 from dulwich import patch
 from dulwich import porcelain
 from dulwich.diff_tree import tree_changes
 from langchain.tools import tool
+from langchain_core.tools import BaseTool, StructuredTool
 
 
 class GitTools:
@@ -85,6 +87,30 @@ class GitTools:
     def get_file_content(self, branch: str, file_path: str) -> str:
         """Get the full content of a file in a specific branch."""
         return self.get_file_content_int(branch, file_path)
+
+    def get_tools(self) -> list[BaseTool]:
+        @tool
+        def list_branches() -> list[str]:
+            """List all branches in the local repository."""
+            return self.list_branches_int()
+
+        @tool
+        def diff_between_branches(branch1: str, branch2: str) -> str:
+            """Get the diff between two branches."""
+            return self.diff_between_branches_int(branch1, branch2)
+
+        @tool
+        def diff_file_content(branch1: str, branch2: str, file_path: str) -> str:
+            """Get the diff of a file's content between two branches."""
+            return self.diff_file_content_int(branch1, branch2, file_path)
+
+        @tool
+        def get_file_content(branch: str, file_path: str) -> str:
+            """Get the full content of a file in a specific branch."""
+            return self.get_file_content_int(branch, file_path)
+
+        return cast(list[BaseTool],
+                    [list_branches, diff_between_branches, diff_file_content, get_file_content])
 
 # Usage example:
 # git_tools = GitTools('/path/to/local/repo')
