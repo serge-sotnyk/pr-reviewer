@@ -34,7 +34,7 @@ def test_diff_between_branches():
     assert diff
 
 
-def test_diff_file_content_int():
+def test_diff_file_content():
     git_tools = GitTools(test_repo_path)
     diff = git_tools.diff_file_content("main", "test", "file_to_modify.txt")
     assert diff
@@ -53,3 +53,17 @@ def test_get_file_content():
     assert "Row to change" not in content_test
     assert "Row changed" in content_test
     assert "And added row" in content_test
+
+
+def test_get_file_content_added():
+    git_tools = GitTools(test_repo_path)
+    content_main = git_tools.get_file_content("test", "file_to_add.txt")
+    assert "added" in content_main
+    assert "not found" not in content_main
+
+
+def test_get_file_content_new_for_old_branch():
+    git_tools = GitTools(test_repo_path)
+    content_main = git_tools.get_file_content("main", "file_to_add.txt")
+    assert "not found" in content_main
+    assert "added" not in content_main
