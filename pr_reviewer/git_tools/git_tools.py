@@ -65,11 +65,27 @@ class GitTools:
         return f"No changes found for file {file_path}"
 
     def get_file_content(self, branch: str, file_path: str) -> str:
-        """Get the full content of a file in a specific branch."""
+        """Get the full content of a file in a specific branch, including files in subdirectories."""
         tree = self._get_branch_tree(branch)
 
+        # Split the file path into parts and filename
+        *path_parts, fn = file_path.split('/')
+
+        # Traverse the tree structure
+        current_tree = tree
+        for part in path_parts:
+            try:
+                mode, sha = self.repo[current_tree][part.encode()]
+                if mode & 0o040000:  # Directory
+                    current_tree = sha  # Just store the SHA, not the Tree object
+                else:
+                    return f"Path {'/'.join(path_parts)} is not a directory in branch {branch}"
+            except KeyError:
+                return f"Directory {part} not found in path {file_path} in branch {branch}"
+
+        # Get the file content
         try:
-            _, file_sha = self.repo[tree][file_path.encode()]
+            mode, file_sha = self.repo[current_tree][fn.encode()]
             return self.repo[file_sha].data.decode('utf-8')
         except KeyError:
             return f"File {file_path} not found in branch {branch}"
