@@ -1,0 +1,17 @@
+env/
+.vscode/
+__pycache__/
+*.log
+venv
+research
+##
+.pytest_cache/
+*.sh
+.git
+.gitignore
+.gitlab-ci.yml
+.gitattributes
+charts
+.dockerignore
+docker-compose.yml
+.env
