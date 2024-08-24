@@ -52,10 +52,6 @@ def determine_branches(git_tools: GitTools, args: argparse.Namespace) -> tuple[s
     return source_branch, destination_branch
 
 
-def perform_review(path: Path, destination_branch: str, source_branch: str) -> str:
-    return make_review(path, destination_branch, source_branch)
-
-
 def store_results(review: str, result_file: str = ''):
     if result_file:
         with open(result_file, 'wt', encoding='utf-8') as f:
@@ -73,7 +69,7 @@ def main():
     git_tools = GitTools(str(args.path))
     source_branch, destination_branch = determine_branches(git_tools, args)
 
-    review = perform_review(args.path, destination_branch, source_branch)
+    review = make_review(args.path, destination_branch, source_branch)
     store_results(review, args.result)
 
 
