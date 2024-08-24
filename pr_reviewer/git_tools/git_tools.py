@@ -1,6 +1,6 @@
 from io import BytesIO
 from pathlib import Path
-from typing import cast
+from typing import cast, Annotated
 
 from dulwich import patch
 from dulwich import porcelain
@@ -25,12 +25,12 @@ class GitTools:
                 branches.append(ref.decode().split('/')[-1])
         return sorted(branches)
 
-    def diff_between_branches(self, branch1: str, branch2: str) -> str:
+    def diff_between_branches(self, base_branch: str, feature_branch: str) -> str:
         """Get the diff between two branches."""
-        tree1 = self._get_branch_tree(branch1)
-        tree2 = self._get_branch_tree(branch2)
+        base_tree = self._get_branch_tree(base_branch)
+        feature_tree = self._get_branch_tree(feature_branch)
 
-        changes = list(tree_changes(self.repo, tree1, tree2))
+        changes = list(tree_changes(self.repo, base_tree, feature_tree))
 
         result = []
         for change in changes:
@@ -40,12 +40,12 @@ class GitTools:
 
         return "\n".join(result)
 
-    def diff_file_content(self, branch1: str, branch2: str, file_path: str) -> str:
+    def diff_file_content(self, base_branch: str, feature_branch: str, file_path: str) -> str:
         """Get the diff of a file's content between two branches."""
-        tree1 = self._get_branch_tree(branch1)
-        tree2 = self._get_branch_tree(branch2)
+        base_tree = self._get_branch_tree(base_branch)
+        feature_tree = self._get_branch_tree(feature_branch)
 
-        changes = list(tree_changes(self.repo, tree1, tree2))
+        changes = list(tree_changes(self.repo, base_tree, feature_tree))
 
         for change in changes:
             if change.new.path and (change.new.path.decode('utf-8') != file_path):
@@ -58,7 +58,7 @@ class GitTools:
                 patch.write_object_diff(diff_output, self.repo.object_store, old_file, new_file)
                 return diff_output.getvalue().decode('utf-8')
             if change.type == 'add':
-                content = self.get_file_content(branch2, file_path)
+                content = self.get_file_content(feature_branch, file_path)
                 content = [f"+{line}" for line in content.splitlines()]
                 return "\n".join(content)
 
@@ -98,17 +98,27 @@ class GitTools:
             return self.list_branches()
 
         @tool
-        def diff_between_branches(branch1: str, branch2: str) -> str:
+        def diff_between_branches(
+                base_branch: Annotated[str, "The branch with the original code"],
+                feature_branch: Annotated[str, "The branch with the modified code"],
+        ) -> str:
             """Get the diff between two branches."""
-            return self.diff_between_branches(branch1, branch2)
+            return self.diff_between_branches(base_branch, feature_branch)
 
         @tool
-        def diff_file_content(branch1: str, branch2: str, file_path: str) -> str:
+        def diff_file_content(
+                base_branch: Annotated[str, "The branch with the original code"],
+                feature_branch: Annotated[str, "The branch with the modified code"],
+                file_path: Annotated[str, "The path to the file in the repository"],
+        ) -> str:
             """Get the diff of a file's content between two branches."""
-            return self.diff_file_content(branch1, branch2, file_path)
+            return self.diff_file_content(base_branch, feature_branch, file_path)
 
         @tool
-        def get_file_content(branch: str, file_path: str) -> str:
+        def get_file_content(
+                branch: Annotated[str, "The branch to get the file content from"],
+                file_path: Annotated[str, "The path to the file in the repository"],
+        ) -> str:
             """Get the full content of a file in a specific branch."""
             return self.get_file_content(branch, file_path)
 
