@@ -61,6 +61,10 @@ class GitTools:
                 content = self.get_file_content(feature_branch, file_path)
                 content = [f"+{line}" for line in content.splitlines()]
                 return "\n".join(content)
+            if change.type == 'delete':
+                content = self.get_file_content(base_branch, file_path)
+                content = [f"-{line}" for line in content.splitlines()]
+                return "\n".join(content)
 
         return f"No changes found for file {file_path}"
 
