@@ -67,3 +67,11 @@ def test_get_file_content_new_for_old_branch():
     content_main = git_tools.get_file_content("main", "file_to_add.txt")
     assert "not found" in content_main
     assert "added" not in content_main
+
+
+def test_get_diff_for_new_file():
+    git_tools = GitTools(test_repo_path)
+    diff = git_tools.diff_file_content("main", "test", "file_to_add.txt")
+    assert "added" in diff
+    assert "No changes found" not in diff
+    
