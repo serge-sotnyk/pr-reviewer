@@ -10,7 +10,7 @@ from pr_reviewer.simple_reviewer import make_review
 load_dotenv()
 
 
-if __name__ == "__main__":
+def initialize_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Review changes between two branches in a repository.")
     parser.add_argument("-p", "--path", type=Path, required=True,
@@ -21,46 +21,61 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--result",
                         help="Filename for storing execution result")
 
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    # Validate repository path
-    if not args.path.is_dir():
-        print(f"Error: The specified path '{args.path}' is not a valid directory.")
+
+def validate_repository(path: Path):
+    if not path.is_dir():
+        print(f"Error: The specified path '{path}' is not a valid directory.")
         sys.exit(1)
 
-    # Initialize GitTools
-    git_tools = GitTools(str(args.path))
 
-    # Get local branches
+def determine_branches(git_tools: GitTools, args: argparse.Namespace) -> tuple[str, str]:
     local_branches = git_tools.list_branches()
 
-    # Determine source branch
-    if not args.source_branch:
-        args.source_branch = next(
-            (branch for branch in local_branches if branch not in {'main', 'master'}), None)
-        if not args.source_branch:
-            print(
-                "Error: Could not determine source branch. "
-                "Please specify it using -s/--source_branch.")
-            sys.exit(1)
+    source_branch = args.source_branch or next(
+        (branch for branch in local_branches if branch not in {'main', 'master'}), None)
+    if not source_branch:
+        print(
+            "Error: Could not determine source branch. "
+            "Please specify it using -s/--source_branch.")
+        sys.exit(1)
 
-    # Determine destination branch
-    if not args.destination_branch:
-        args.destination_branch = next(
-            (branch for branch in local_branches if branch in {'main', 'master'}), None)
-        if not args.destination_branch:
-            print(
-                "Error: Could not determine destination branch. "
-                "Please specify it using -d/--destination_branch.")
-            sys.exit(1)
+    destination_branch = args.destination_branch or next(
+        (branch for branch in local_branches if branch in {'main', 'master'}), None)
+    if not destination_branch:
+        print(
+            "Error: Could not determine destination branch. "
+            "Please specify it using -d/--destination_branch.")
+        sys.exit(1)
 
-    # Make the review
-    review = make_review(args.path, args.destination_branch, args.source_branch)
+    return source_branch, destination_branch
 
-    # Output the result
-    if args.result:
-        open(args.result, 'wt', encoding='utf-8').write(review)
-        print(f"Review has been written to {args.result}")
+
+def perform_review(path: Path, destination_branch: str, source_branch: str) -> str:
+    return make_review(path, destination_branch, source_branch)
+
+
+def store_results(review: str, result_file: str = ''):
+    if result_file:
+        with open(result_file, 'wt', encoding='utf-8') as f:
+            f.write(review)
+        print(f"Review has been written to {result_file}")
     else:
         print("Review:")
         print(review)
+
+
+def main():
+    args = initialize_arguments()
+    validate_repository(args.path)
+
+    git_tools = GitTools(str(args.path))
+    source_branch, destination_branch = determine_branches(git_tools, args)
+
+    review = perform_review(args.path, destination_branch, source_branch)
+    store_results(review, args.result)
+
+
+if __name__ == "__main__":
+    main()
