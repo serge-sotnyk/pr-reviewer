@@ -25,12 +25,14 @@ class GitTools:
                 branches.append(ref.decode().split('/')[-1])
         return sorted(branches)
 
-    def diff_between_branches(self, base_branch: str, feature_branch: str) -> str:
-        """Get the diff between two branches."""
+    def _get_tree_changes(self, base_branch: str, feature_branch: str) -> list:
         base_tree = self._get_branch_tree(base_branch)
         feature_tree = self._get_branch_tree(feature_branch)
+        return list(tree_changes(self.repo, base_tree, feature_tree))
 
-        changes = list(tree_changes(self.repo, base_tree, feature_tree))
+    def diff_between_branches(self, base_branch: str, feature_branch: str) -> str:
+        """Get the diff between two branches."""
+        changes = self._get_tree_changes(base_branch, feature_branch)
 
         result = []
         for change in changes:
@@ -42,10 +44,7 @@ class GitTools:
 
     def diff_file_content(self, base_branch: str, feature_branch: str, file_path: str) -> str:
         """Get the diff of a file's content between two branches."""
-        base_tree = self._get_branch_tree(base_branch)
-        feature_tree = self._get_branch_tree(feature_branch)
-
-        changes = list(tree_changes(self.repo, base_tree, feature_tree))
+        changes = self._get_tree_changes(base_branch, feature_branch)
 
         for change in changes:
             if change.new.path and (change.new.path.decode('utf-8') != file_path):
