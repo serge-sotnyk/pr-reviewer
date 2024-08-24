@@ -17,6 +17,7 @@ def find_this_repo_path():
                                     f"prepare_test_repo.py script.")
         repo_path = repo_path.parent
 
+
 def find_test_repo_path():
     """Find the path to the repository by traversing upwards from the current source directory."""
     repo_path = Path(__file__).parent
@@ -31,6 +32,7 @@ def find_test_repo_path():
 
 test_repo_path = find_test_repo_path()
 this_repo_path = find_this_repo_path()
+
 
 def test_list_branches():
     git_tools = GitTools(test_repo_path)

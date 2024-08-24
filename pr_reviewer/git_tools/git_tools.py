@@ -65,7 +65,8 @@ class GitTools:
         return f"No changes found for file {file_path}"
 
     def get_file_content(self, branch: str, file_path: str) -> str:
-        """Get the full content of a file in a specific branch, including files in subdirectories."""
+        """Get the full content of a file in a specific branch, including files in
+        subdirectories."""
         tree = self._get_branch_tree(branch)
 
         # Split the file path into parts and filename

@@ -34,12 +34,7 @@ def make_review(repo_path: str | Path, old_branch: str, new_branch: str) -> str:
     """Review the changes between two branches."""
     llm = get_llm()
     toolbox = GitTools(repo_path)
-    # tools: list[BaseTool] = [
-    #     toolbox.list_branches,
-    #     toolbox.diff_between_branches,
-    #     toolbox.get_file_content,
-    #     toolbox.diff_file_content,
-    #     ]
+
     tools: list[BaseTool] = toolbox.get_tools()
     prompt = ChatPromptTemplate.from_messages([
         ('system', "You are an experienced code reviewer"),
