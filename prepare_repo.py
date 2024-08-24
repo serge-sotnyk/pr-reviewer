@@ -1,9 +1,9 @@
 import argparse
 from pathlib import Path
+
 from dulwich import porcelain
-from dulwich.repo import Repo
 from dulwich.client import get_transport_and_path
-from dulwich.refs import RefsContainer
+from dulwich.repo import Repo
 
 
 def list_remote_branches(repo_url: str) -> list[str]:
@@ -56,7 +56,8 @@ def clone_repo(repo_path: Path, repo_url: str, branches: list[str]):
 def main():
     parser = argparse.ArgumentParser(
         description="Prepare a Git repository with specific branches.")
-    parser.add_argument("-r", "--repo", required=True, help="URL of the Git repository")
+    parser.add_argument("-r", "--repo", required=True,
+                        help="URL of the Git repository")
     parser.add_argument("-p", "--path", help="Local path for the repository")
     parser.add_argument("branches", nargs="*",
                         help="List of branches to download (empty for all branches)")
