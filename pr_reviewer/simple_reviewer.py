@@ -16,16 +16,20 @@ code_review_assistant_prompt = dedent("""
     Follow these steps:
     1. Retrieve the diff between the two branches (```diff_between_branches```).
     2. For each file in the diff:
-    2.1. Identify if the file contains significant logic changes. Continue to the next file if not.
+    2.1. Identify if the file contains significant logic changes. Continue to the next file if not. 
+    2.1.1. Use ```diff_file_content``` tool for glance at the changes in the file.
+    2.1.2. Use ```get_file_content``` tool to get the content of the file in the branch 
+           '{new_branch}' if you can't realize the changes by the diff.
+    2.1.3. Decide if the changes are significant enough to be reviewed or we need continue the step 
+           2 with the next file.
     2.2. Summarize the changes in the diff in clear and concise English, within 100 words.
     2.3. Provide actionable suggestions if there are any issues in the code.      
     
-    Use tools to check the files diffs (```diff_file_content```) and contents (```get_file_content```).  
 """)
 
 
 def get_llm() -> BaseChatModel:
-    llm = ChatGroq(model='llama-3.1-70b-versatile', temperature=0.0)
+    llm = ChatGroq(model='llama-3.1-70b-versatile', temperature=0.1)
     # llm = ChatGroq(model='mixtral-8x7b-32768', temperature=0.0)
     return llm
 
