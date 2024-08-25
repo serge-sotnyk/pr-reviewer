@@ -11,7 +11,7 @@ Code Review Service Part 2: complete Python project.
 Human-agents interaction: one .pdf file.
   
 
-The archive name should consist of the candidate's last name and first name, following the template <lastname>_<firstname>.zip
+The archive name should consist of the candidate's last name and first name, following the template \<lastname\>_\<firstname\>.zip
 
 ## Code Review SaaS Service
 
