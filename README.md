@@ -1,6 +1,126 @@
 # pr-reviewer
 Test task for NameCheap
 
+# Repository Utilities
+
+This repository contains two utilities for managing and reviewing Git repositories:
+
+1. `prepare_repo.py`: Downloads and prepares a Git repository for review.
+2. `make_review.py`: Performs a code review on changes between branches.
+
+## Installation
+
+This project uses Poetry for dependency management. Follow these steps to set up 
+your environment:
+
+### Method 1: Standard Installation
+
+1. Ensure you have Python 3.11 or newer and Poetry installed on your system.
+2. Clone this repository:
+   ```
+   git clone <repository-url>
+   cd <repository-directory>
+   ```
+3. Install dependencies using Poetry:
+   ```
+   poetry install
+   ```
+4. Activate the virtual environment:
+   ```
+   poetry shell
+   ```
+
+### Method 2: Alternative Installation for Windows
+
+This method can be used on Windows systems without installed globally Poetry.
+
+1. Create a virtual environment with Python 3.11:
+   ```
+   python3.11 -m venv venv
+   ```
+2. Activate the virtual environment:
+   ```
+   venv\Scripts\activate
+   ```
+3. Install Poetry within the virtual environment:
+   ```
+   pip install poetry
+   ```
+4. Use Poetry to install project dependencies:
+   ```
+   poetry install
+   ```
+
+Choose the method that works best for your setup and preferences.
+
+## Usage
+
+### prepare_repo.py
+
+This utility downloads a specified Git repository and prepares it for review.
+
+```
+python prepare_repo.py [-h] -r REPO [-p PATH] [branches ...]
+```
+
+Parameters:
+- `-r, --repo REPO`: URL of the Git repository (required)
+- `-p, --path PATH`: Local path for the repository
+- `branches`: List of branches to download (optional, leave empty for all branches)
+
+Examples:
+```
+# List remote branches
+python prepare_repo.py -r https://github.com/user/repo
+
+# Clone repository with all branches
+python prepare_repo.py -r https://github.com/user/repo -p ./local_repo
+
+# Clone repository with specific branches
+python prepare_repo.py -r https://github.com/user/repo -p ./local_repo main develop
+```
+
+### make_review.py
+
+This utility performs a code review on changes between two branches in a repository.
+We assume that these branches are the part of the pull request.
+
+```
+python make_review.py [-h] -p PATH [-s SOURCE_BRANCH] [-d DESTINATION_BRANCH] [-r RESULT] [-m MODEL]
+```
+
+Parameters:
+- `-p, --path PATH`: Path to the local repository (required)
+- `-s, --source_branch`: Name of the new branch (optional). If not provided, the first branch with name 
+  not equal to `main` or `master` will be used.
+- `-d, --destination_branch`: Name of the destination branch (optional). If not provided, the `main` 
+  or `master` branch will be used.
+- `-r, --result`: Filename for storing execution result (optional). If not provided, the result will 
+  be printed in the console.
+- `-m, --model`: Name of the model to use (default: "llama-3.1-70b-versatile")
+
+Examples:
+```
+# Review changes between auto-detected branches
+python make_review.py -p ./local_repo
+
+# Review changes with specified branches and output file
+python make_review.py -p ./local_repo -s feature-branch -d main -r review_output.txt
+
+# Review changes using a specific model
+python make_review.py -p ./local_repo -m gpt-4-mini
+```
+
+Note: If the model name starts with 'gpt', it will use the OpenAI provider; otherwise, it will use the Groq provider.
+
+## Workflow
+
+1. Use `prepare_repo.py` to download and set up the repository you want to review.
+2. Use `make_review.py` to perform a code review on the changes between branches in the prepared repository.
+
+Remember to activate the virtual environment before running these scripts.
+
+
 # PR Reviewer Docker Image Usage Instructions
 
 Image name: `atepeq/pr-reviewer:latest`
@@ -127,26 +247,3 @@ docker run --rm -it ^
 Replace `<SOURCE_BRANCH>`, `<DESTINATION_BRANCH>`, and optionally `<RESULT_FILE>` with appropriate values.
 
 Note: If you specify a `<RESULT_FILE>`, make sure it's within the mounted directory to access it from your host machine.
-
-## Additional Notes
-
-- Ensure that the local directory you're mounting has the necessary permissions for the container to read and write.
-- The working directory inside the container is set to `/work`, so all paths should be relative to this.
-- If you need to run multiple commands or use a shell inside the container, you can use:
-
-  Linux/macOS:
-  ```bash
-  docker run --rm -it --env-file .env -v /path/to/local/repo:/work/repo atepeq/pr-reviewer:latest /bin/bash
-  ```
-
-  Windows (Command Prompt):
-  ```cmd
-  docker run --rm -it --env-file .env -v C:\path\to\local\repo:/work/repo atepeq/pr-reviewer:latest /bin/bash
-  ```
-
-  This will give you a shell inside the container where you can run the Python scripts directly.
-
-- On Windows, you may need to enable file sharing for the drive you're mounting. You can do this in Docker Desktop settings under "Resources" > "File Sharing".
-- When using Command Prompt on Windows, the caret (^) is used for line continuation instead of the backslash (\) used in bash.
-- Windows paths use backslashes (\) by default, but Docker requires forward slashes (/) for volume mounting. Make sure to use forward slashes when specifying the path in the Docker command.
-- In Windows Command Prompt, environment variables are referenced using %VARIABLE% syntax instead of $VARIABLE.
