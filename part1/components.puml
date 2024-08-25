@@ -1,0 +1,74 @@
+@startuml
+!define RECTANGLE class
+
+skinparam componentStyle uml2
+skinparam component {
+  BorderColor #000000
+  BackgroundColor #FFFFFF
+  ArrowColor #000000
+}
+
+rectangle "Code Review SaaS" {
+  [API Gateway] as AG
+  [Queue Manager] as QM
+  [Code Fetcher] as CF
+  [LLM-based Review Agent] as LRA
+  [GitHub API Integrator] as GAI
+  database "Database" as DB
+  [Admin Panel] as AP
+  [User Interface] as UI
+  queue "RabbitMQ" as RMQ
+  storage "Shared File Storage" as SFS
+  [Billing & Usage Service] as BUS
+
+  component "Monitoring & Logging\n(ELK/Prometheus+Grafana)" as ML
+}
+
+cloud {
+  [GitHub] as GH
+}
+
+cloud {
+  [Payment Gateway] as PG
+}
+
+actor "User/CI" as USER
+
+USER --> AG : HTTP requests
+AG --> UI : Serves
+AG --> AP : Manages
+AG --> QM : Submits jobs
+QM <--> RMQ : Manages queues
+CF <--> GH : Fetches code
+LRA --> DB : Stores results
+GAI --> GH : Submits comments
+CF <--> RMQ : Consumes jobs
+LRA <--> RMQ : Consumes jobs
+GAI <--> RMQ : Consumes jobs
+
+UI <--> DB : Stores/retrieves data
+AP <--> DB : Manages system data
+
+CF <--> SFS : Stores fetched code
+LRA <--> SFS : Reads code for review
+CF ..> SFS : Cleans up old repos
+
+LRA --> GAI : Sends review results
+
+BUS <--> DB : Stores billing data
+BUS <--> PG : Processes payments
+BUS <-- LRA : Reports token usage
+BUS <-- GAI : Reports PR count
+AG --> BUS : Checks user limits
+
+ML ..> AG : Monitors
+ML ..> QM : Monitors
+ML ..> CF : Monitors
+ML ..> LRA : Monitors
+ML ..> GAI : Monitors
+ML ..> DB : Monitors
+ML ..> RMQ : Monitors
+ML ..> SFS : Monitors
+ML ..> BUS : Monitors
+
+@enduml
