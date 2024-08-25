@@ -1,6 +1,48 @@
 # pr-reviewer
 Test task for NameCheap
 
+# Current agent limitations:
+At present, I've used the simplest single agent. The prompt isn't very complex. By 
+default, it uses a model that isn't the best (but one that Groq allows to try for 
+free). Nevertheless, we can see a somewhat plausible output.
+
+I'm confident that the agent can be easily and significantly improved by trying the 
+following changes:
+
+* Use a better model (gpt4-omni / claude-3.5-sonnet)
+* Create a team of agents, each specializing in their own area (this usually improves 
+  the quality of responses)
+* Create a database of guidelines for code review
+* Work on prompts (for example, try different approaches like ReAct, CoT, etc., or 
+  evolutionary approaches, although this is not as straightforward)
+
+However, all of this is pointless until we have a way to measure quality. In other 
+words, we need metrics and a dataset on which we would measure this. I don't think 
+I'll create it very quickly for this task, although LLMs will help us with this as 
+well. I would start with the following approach:
+
+1. Take a code base. (How much? Which languages?)
+2. Using a good model (for example, claude-3.5-sonnet - it works best with code for 
+  me so far), create commits where there are some code flaws. This is a separate task 
+  that needs to be well-thought-out and properly prompted. Yes, this is synthetic, but 
+  I'm sure it will allow us to measure how well the reviewer works.
+3. The reviewer should also be evaluated by an LLM. I think a cheaper one will do here 
+  (this is important because metrics will be run quite often), as it will only need to 
+  understand whether the reviewer described the flaw that the large and high-quality 
+  model introduced. This is a simpler task.
+4. If it's possible to add real data somehow (for example, if there's a database of 
+  pull requests and reviews from humans), that would be good too.
+
+Only after setting up the metric calculation can we start improving anything.
+
+There's also an untapped field in testing on various cases:
+* Regular cases
+* Various edge cases
+* Large volumes of code
+
+We can also add various tools for working with the repository - I've only implemented 
+the minimal toolbox.
+
 # Repository Utilities
 
 This repository contains two utilities for managing and reviewing Git repositories:
