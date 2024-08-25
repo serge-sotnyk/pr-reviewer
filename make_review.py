@@ -20,7 +20,11 @@ def initialize_arguments() -> argparse.Namespace:
                         help="Name of the destination branch")
     parser.add_argument("-r", "--result",
                         help="Filename for storing execution result")
-
+    parser.add_argument(
+        "-m", "--model", default="llama-3.1-70b-versatile",
+        help="Name of the model to use (e.g., gpt-4o-mini, llama-3.1-70b-versatile). "
+             "If model name starting with 'gpt' will use OpenAI provider, otherwise Groq provider."
+    )
     return parser.parse_args()
 
 
@@ -69,7 +73,7 @@ def main():
     git_tools = GitTools(str(args.path))
     source_branch, destination_branch = determine_branches(git_tools, args)
 
-    review = make_review(args.path, destination_branch, source_branch)
+    review = make_review(args.path, destination_branch, source_branch, args.model)
     store_results(review, args.result)
 
 

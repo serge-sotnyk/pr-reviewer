@@ -6,6 +6,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.tools import BaseTool
 from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
 
 from pr_reviewer.git_tools.git_tools import GitTools
 
@@ -28,15 +29,17 @@ code_review_assistant_prompt = dedent("""
 """)
 
 
-def get_llm() -> BaseChatModel:
-    llm = ChatGroq(model='llama-3.1-70b-versatile', temperature=0.1)
-    # llm = ChatGroq(model='mixtral-8x7b-32768', temperature=0.0)
-    return llm
+def get_llm(model: str = 'llama-3.1-70b-versatile') -> BaseChatModel:
+    if model.startswith('gpt'):
+        return ChatOpenAI(model=model, temperature=0.1)
+    else:
+        return ChatGroq(model=model, temperature=0.1)
 
 
-def make_review(repo_path: str | Path, old_branch: str, new_branch: str) -> str:
+def make_review(repo_path: str | Path, old_branch: str, new_branch: str,
+                model: str = 'llama-3.1-70b-versatile') -> str:
     """Review the changes between two branches."""
-    llm = get_llm()
+    llm = get_llm(model)
     toolbox = GitTools(repo_path)
 
     tools: list[BaseTool] = toolbox.get_tools()
