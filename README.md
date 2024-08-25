@@ -53,11 +53,17 @@ This method can be used on Windows systems without installed globally Poetry.
 
 Choose the method that works best for your setup and preferences.
 
+### Environment Variables
+Please copy the `.env-example` file to `.env` and fill in the required 
+environment variables.
+
 ## Usage
 
 ### prepare_repo.py
 
 This utility downloads a specified Git repository and prepares it for review.
+This version targeted on public repositories. If you want to test agents on private
+repositories, please clone them manually.
 
 ```
 python prepare_repo.py [-h] -r REPO [-p PATH] [branches ...]
@@ -97,7 +103,9 @@ Parameters:
   or `master` branch will be used.
 - `-r, --result`: Filename for storing execution result (optional). If not provided, the result will 
   be printed in the console.
-- `-m, --model`: Name of the model to use (default: "llama-3.1-70b-versatile")
+- `-m, --model`: Name of the model to use (default: "llama-3.1-70b-versatile"). Right now,
+  we support models from OpenAI and Groq. If the model name starts with 'gpt', it will use the OpenAI provider;
+  otherwise, it will use the Groq provider. Please, check if you fill the proper API key in the `.env` file.
 
 Examples:
 ```
