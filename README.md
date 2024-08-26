@@ -1,6 +1,7 @@
 # pr-reviewer
 Test task for NameCheap
 * https://youtu.be/dudpBnMJR80 - Video with comments about this test-task (in Ukrainian)
+* https://github.com/serge-sotnyk/pr-reviewer - GitHub repository with the code
 
 # Current agent limitations:
 At present, I've used the simplest single agent. The prompt isn't very complex. By 
