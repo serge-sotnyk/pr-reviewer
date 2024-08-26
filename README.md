@@ -1,5 +1,6 @@
 # pr-reviewer
 Test task for NameCheap
+* https://youtu.be/dudpBnMJR80 - Video with comments about this test-task (in Ukrainian)
 
 # Current agent limitations:
 At present, I've used the simplest single agent. The prompt isn't very complex. By 
