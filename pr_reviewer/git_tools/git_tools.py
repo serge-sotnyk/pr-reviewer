@@ -40,7 +40,8 @@ class GitTools:
             new_path = change.new.path.decode('utf-8') if change.new.path else None
             result.append(f"Type: {change.type}, Old: {old_path}, New: {new_path}")
 
-        return "\n".join(result)
+        return "\n".join(result) if result \
+            else f"Branches `{base_branch}` and `{feature_branch}` have the same content"
 
     def diff_file_content(self, base_branch: str, feature_branch: str, file_path: str) -> str:
         """Get the diff of a file's content between two branches."""

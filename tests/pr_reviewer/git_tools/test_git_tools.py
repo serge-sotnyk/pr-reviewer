@@ -47,6 +47,12 @@ def test_diff_between_branches():
     assert diff
 
 
+def test_diff_between_branches_no_diff():
+    git_tools = GitTools(test_repo_path)
+    diff = git_tools.diff_between_branches("main", "main")
+    assert "same" in diff
+
+
 def test_diff_file_content():
     git_tools = GitTools(test_repo_path)
     diff = git_tools.diff_file_content("main", "test", "file_to_modify.txt")
